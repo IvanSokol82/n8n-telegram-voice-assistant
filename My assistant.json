@@ -1,0 +1,1467 @@
+{
+  "name": "My assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        16
+      ],
+      "id": "faadeaf2-2761-49ee-a3f5-ad3c5c20d4c5",
+      "name": "Telegram Trigger",
+      "webhookId": "648a7151-a766-4198-8124-d20c5b5b5823",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query ? 'button' : ($json.message.text ? 'command' : 'voice') }}",
+                    "rightValue": "=voice",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "efde1f4f-78e0-408a-aa00-f08b171f82e7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Голосове повідомлення"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "53d89de6-94e8-4d5e-af18-0b146ffcba5e",
+                    "leftValue": "={{ $json.callback_query ? 'button' : ($json.message.text ? 'command' : 'voice') }}",
+                    "rightValue": "button",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Кнопки"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2dbab816-2681-4b67-9faf-32e15eb3fa40",
+                    "leftValue": "={{ $json.callback_query ? 'button' : ($json.message.voice ? 'voice' : 'command') }}",
+                    "rightValue": "command",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Команди"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        416,
+        -16
+      ],
+      "id": "972e0fdb-c68e-4096-8c2a-baa06a9a896c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        -368
+      ],
+      "id": "bc99ce51-b15b-41b4-a2ef-b3650ea7a51f",
+      "name": "Get a file",
+      "webhookId": "62c89a28-6627-43bd-b77b-4a572a553dd0",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "uk"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        -368
+      ],
+      "id": "755e114e-dddc-4777-9f8a-f2ab7294b259",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "gmidvaWhNF9361rN",
+          "name": "My OpenAi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger\"].json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "💾 Зберегти",
+                    "additionalFields": {
+                      "callback_data": "save_note"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        -368
+      ],
+      "id": "295377b4-d8a7-4605-9ba1-b4f1578175dc",
+      "name": "Send a text message",
+      "webhookId": "cba1dd1b-df94-46b2-b93c-a1f97fdd4fc3",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "36d26e31-4c8d-4f2d-b2aa-1e83df3c42f6",
+                    "leftValue": "={{ $json.callback_query.message.reply_markup.inline_keyboard[0][0].callback_data }}",
+                    "rightValue": "save_note",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "save_note"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f686824d-f219-4c0e-815a-a377dc385e79",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "done_",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Done"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6df96195-4a12-47d3-8cd3-bea75cf76e94",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "del_",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Delete"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "216a6b2d-1b0f-42ed-8df7-772908254a48",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "edit_",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Edit"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        656,
+        -32
+      ],
+      "id": "e0360886-4324-4abb-bc57-ba3a6dc6d780",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA",
+          "mode": "list",
+          "cachedResultName": "Мої ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "New",
+            "Note": "={{ $('Telegram Trigger').item.json.callback_query.message.text }}",
+            "TelegramMsgID": "={{ $('Telegram Trigger').item.json.callback_query.message.chat.id }}",
+            "Date": "={{ $now.format('dd-MM-yyyy HH:mm') }}",
+            "ID": "={{ $now.valueOf() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TelegramMsgID",
+              "displayName": "TelegramMsgID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        976,
+        -192
+      ],
+      "id": "6c9eb376-4ed4-474f-a196-e2aa9169aaeb",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kd9OQtr54y1eI3VT",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA",
+          "mode": "list",
+          "cachedResultName": "Мої ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "New"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        176
+      ],
+      "id": "031c4428-5ae0-47fb-9f05-c49e75cdd534",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kd9OQtr54y1eI3VT",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "=📝 *Ідея:* {{ $json.Note }}\n📅 _Datum:_ {{ $json.Date }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✏️ Редаг.",
+                    "additionalFields": {
+                      "callback_data": "=edit_{{ $json.ID }}"
+                    }
+                  },
+                  {
+                    "text": "✅ Виконана",
+                    "additionalFields": {
+                      "callback_data": "=done_{{ $json.ID }}"
+                    }
+                  },
+                  {
+                    "text": "🗑 Видалити",
+                    "additionalFields": {
+                      "callback_data": "=del_{{ $json.ID }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        176
+      ],
+      "id": "812bed75-1c83-4ad5-bd31-72e680b2f485",
+      "name": "Send Ideas",
+      "webhookId": "27f1c60c-ae62-4499-a789-2d7a9e602e77",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA",
+          "mode": "list",
+          "cachedResultName": "Мої ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $node[\"Telegram Trigger\"].json.callback_query.data.replace('done_', '') }}",
+            "Status": "Done",
+            "Date": "={{ $now.format('dd-MM-yyyy HH:mm') }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TelegramMsgID",
+              "displayName": "TelegramMsgID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        976,
+        -16
+      ],
+      "id": "0fb08e4b-c746-447e-9c0e-9070d01e93a9",
+      "name": "Update Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kd9OQtr54y1eI3VT",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA",
+          "mode": "list",
+          "cachedResultName": "Мої ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit#gid=0"
+        },
+        "startIndex": "={{ $json.row_number }}",
+        "numberToDelete": "={{ $json.row_number }}"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        144
+      ],
+      "id": "4ce62681-eaa6-4bf7-bf12-49a11a415a46",
+      "name": "Delete Idea",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kd9OQtr54y1eI3VT",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA",
+          "mode": "list",
+          "cachedResultName": "Мої ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $node[\"Telegram Trigger\"].json.callback_query.data.replace('del_', '') }}"
+            }
+          ]
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        976,
+        144
+      ],
+      "id": "7d0971a4-68bf-42a9-aa9b-a4719edcda0a",
+      "name": "Get row for Delete",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kd9OQtr54y1eI3VT",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.from.id }}",
+        "text": "🎉 Чудово! Ідею позначено як виконану.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        -16
+      ],
+      "id": "64f371cd-08f1-40a1-be9e-492b07abc7e0",
+      "name": "Message Status Update",
+      "webhookId": "af29e31d-ef32-4d30-9265-acf590dc7741",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.from.id }}",
+        "text": "Ідею видалено!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        144
+      ],
+      "id": "652355d5-da72-47e6-8bd7-33f77861451c",
+      "name": "Message Idea Delete",
+      "webhookId": "e63619c6-e6ad-4f17-a8c5-4109607d28ab",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.from.id }}",
+        "text": "Ідея була записана!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        -192
+      ],
+      "id": "aa030a85-3a5a-4949-b429-86bcdad10125",
+      "name": "Send Success",
+      "webhookId": "a5d19504-a74b-4154-81b2-22621b294168",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query ? 'button' : ($json.message.text ? 'command' : 'voice') }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "ed2aa8df-6df9-4d18-8892-4bd61f7b5d70"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9ecd67cd-59c0-4a88-95c0-53caee42bf08",
+                    "leftValue": "={{ $json.message.reply_to_message.text }}",
+                    "rightValue": "РЕЖИМ РЕДАГУВАННЯ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        208,
+        16
+      ],
+      "id": "cabc1181-52f1-4cd5-9081-7ef7712dd0ce",
+      "name": "Switch Edit or Not"
+    },
+    {
+      "parameters": {
+        "jsCode": "{{ $json.message.reply_to_message.text.split('ID: ')[1] }}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        704
+      ],
+      "id": "b7200f70-feec-4171-9a74-6d5a1a9b7494",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "ed2aa8df-6df9-4d18-8892-4bd61f7b5d70"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9ecd67cd-59c0-4a88-95c0-53caee42bf08",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "РЕЖИМ РЕДАГУВАННЯ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        560,
+        704
+      ],
+      "id": "e0abad04-b41c-4d88-99fe-e6d6f5b4b8fb",
+      "name": "Switch Text or Voice"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        704,
+        544
+      ],
+      "id": "6a22cada-cab3-4cfd-b3cb-4b49eb5659bb",
+      "name": "Transcribe a recording1",
+      "credentials": {
+        "openAiApi": {
+          "id": "gmidvaWhNF9361rN",
+          "name": "My OpenAi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA",
+          "mode": "list",
+          "cachedResultName": "Мої ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Note": "={{ $json.message.text }}",
+            "Date": "{{ $now.format('dd-MM-yyyy HH:mm') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "TelegramMsgID",
+              "displayName": "TelegramMsgID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        864
+      ],
+      "id": "34a2901f-5adc-4c61-95cf-6fad83c8cfdd",
+      "name": "Update row Text",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kd9OQtr54y1eI3VT",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA",
+          "mode": "list",
+          "cachedResultName": "Мої ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ідеї",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LyhsJ3lQWVRcZN_CAmv6vEPSS97OwGxdhFas23OrNSA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Note": "={{ $json.text }}",
+            "Date": "={{ $now.format('dd-MM-yyyy HH:mm') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "TelegramMsgID",
+              "displayName": "TelegramMsgID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        544
+      ],
+      "id": "c0e4a7e7-3f49-47f4-b74c-33a45d08518d",
+      "name": "Update row Voice",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kd9OQtr54y1eI3VT",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.from.id }}",
+        "text": "🎉 Чудово! Ідею перезаписано",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        544
+      ],
+      "id": "692e6416-fab8-49a9-aedd-f86b6b49bea5",
+      "name": "Message Voice Update",
+      "webhookId": "af29e31d-ef32-4d30-9265-acf590dc7741",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.from.id }}",
+        "text": "🎉 Чудово! Ідею перезаписано",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        944,
+        864
+      ],
+      "id": "28ec78aa-8bf6-4c9a-947a-9c8f52bcef7e",
+      "name": "Message Text Update",
+      "webhookId": "af29e31d-ef32-4d30-9265-acf590dc7741",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger\"].json.callback_query.message.chat.id }}",
+        "text": "=📝 РЕЖИМ РЕДАГУВАННЯ\nНадішліть новий текст або голосове для ID: {{ $node[\"Telegram Trigger\"].json.callback_query.data.replace('edit_', '') }}",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        304
+      ],
+      "id": "09432ca0-3a67-47e5-a377-2e59687a72e1",
+      "name": "Message Edit ok",
+      "webhookId": "9a94ee0a-bcd7-46ec-af34-0882f40bbe1c",
+      "credentials": {
+        "telegramApi": {
+          "id": "sGbAX4gWnc3X01x4",
+          "name": "Telegram assistent"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch Edit or Not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row for Delete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Edit ok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Ideas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status": {
+      "main": [
+        [
+          {
+            "node": "Message Status Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Idea": {
+      "main": [
+        [
+          {
+            "node": "Message Idea Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row for Delete": {
+      "main": [
+        [
+          {
+            "node": "Delete Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Edit or Not": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch Text or Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Text or Voice": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update row Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording1": {
+      "main": [
+        [
+          {
+            "node": "Update row Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row Voice": {
+      "main": [
+        [
+          {
+            "node": "Message Voice Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row Text": {
+      "main": [
+        [
+          {
+            "node": "Message Text Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bd85SqNhtOsxNT37",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "06adf8fa-39de-4f2a-b6b6-9819736934a7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7c70b1af8ddaaaadecec8cb31f85409b71629d1262d6def28645109c49d64439"
+  },
+  "nodeGroups": [],
+  "id": "yzjloqezKaPNphrU",
+  "tags": []
+}
